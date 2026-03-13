@@ -45,17 +45,52 @@
  *   // => [{ rating: 5 }, { rating: 3 }]
  */
 export function createFilter(field, operator, value) {
-  // Your code here
+  const ops = {
+    ">": (a, b) => a > b,
+    "<": (a, b) => a < b,
+    ">=": (a, b) => a >= b,
+    "<=": (a, b) => a <= b,
+    "===": (a, b) => a === b,
+  };
+  const fn = ops[operator];
+  if (typeof fn !== "function") return () => false;
+  return (obj) => {
+    if (!obj || !(field in obj)) return false;
+    return fn(obj[field], value);
+  };
 }
 
 export function createSorter(field, order = "asc") {
-  // Your code here
+  const dir = order === "desc" ? -1 : 1;
+  return (a, b) => {
+    const va = a[field];
+    const vb = b[field];
+    if (typeof va === "string" && typeof vb === "string") {
+      return dir * va.localeCompare(vb);
+    }
+    if (va === undefined && vb === undefined) return 0;
+    if (va === undefined) return 1 * dir;
+    if (vb === undefined) return -1 * dir;
+    return dir * (va - vb);
+  };
 }
 
 export function createMapper(fields) {
-  // Your code here
+  return (obj) => {
+    const out = {};
+    for (const f of fields) {
+      if (Object.prototype.hasOwnProperty.call(obj, f)) out[f] = obj[f];
+    }
+    return out;
+  };
 }
 
 export function applyOperations(data, ...operations) {
-  // Your code here
+  if (!Array.isArray(data)) return [];
+  if (!operations || operations.length === 0) return data;
+  let result = data;
+  for (const op of operations) {
+    if (typeof op === "function") result = op(result);
+  }
+  return result;
 }

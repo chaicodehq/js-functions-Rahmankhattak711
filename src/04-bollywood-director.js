@@ -45,13 +45,47 @@
  *   pricer("gold", true)  // => 200 * 1.5 * 1.3 = 390
  */
 export function createDialogueWriter(genre) {
-  // Your code here
+  const templates = {
+    action: (h, v) => `${h} says: 'Tujhe toh main dekh lunga, ${v}!'`,
+    romance: (h, v) => `${h} whispers: '${v}, tum mere liye sab kuch ho'`,
+    comedy: (h, v) => `${h} laughs: '${v} bhai, kya kar rahe ho yaar!'`,
+    drama: (h, v) => `${h} cries: '${v}, tune mera sab kuch cheen liya!'`,
+  };
+  if (!Object.prototype.hasOwnProperty.call(templates, genre)) return null;
+  return (hero, villain) => {
+    if (
+      typeof hero !== "string" ||
+      hero === "" ||
+      typeof villain !== "string" ||
+      villain === ""
+    )
+      return "...";
+    return templates[genre](hero, villain);
+  };
 }
 
 export function createTicketPricer(basePrice) {
-  // Your code here
+  if (!Number.isFinite(basePrice) || basePrice <= 0) return null;
+  const multipliers = { silver: 1, gold: 1.5, platinum: 2 };
+  return (seatType, isWeekend = false) => {
+    if (!Object.prototype.hasOwnProperty.call(multipliers, seatType))
+      return null;
+    let price = basePrice * multipliers[seatType];
+    if (isWeekend) price = price * 1.3;
+    return Math.round(price);
+  };
 }
 
 export function createRatingCalculator(weights) {
-  // Your code here
+  if (!weights || typeof weights !== "object" || Array.isArray(weights))
+    return null;
+  return (scores) => {
+    let total = 0;
+    for (const key of Object.keys(weights)) {
+      const w = weights[key] || 0;
+      const s = scores && typeof scores[key] === "number" ? scores[key] : 0;
+      total += s * w;
+    }
+    return Math.round(total * 10) / 10;
+  };
 }
